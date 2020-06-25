@@ -1,60 +1,71 @@
 <?php
-    session_start(); //Begins session, allows user ID to be stored for access throughout website.
-
-    //Key for encryption of all data in database, robust enough to keep web hosting account secure.
-    $key = '7X8MSO2ubF`Widl';
-    //Key updated in one place and applies to all encryption used throughout website.
-
-    function checkForAppostrophe($variable){
-    $variable = str_replace("'", "ʼ", $variable); //Replaces appostrophe with similar unicode replacement to avoid escaping SQL commands for statements containing any appostrophes.
-    return $variable;
+  // allows user ID to be stored for access throughout website.
+  session_start();
+?>
+  <!-- default black style for page -->
+  <link id="pagestyle" rel="stylesheet" type="text/css" href="style.css">
+  <!-- function to update style sheer with dark or light mode -->
+  <script>
+    function darkTheme() {
+    var theme = document.getElementById('pagestyle');
+    theme.href = "style.css";
     }
 
+    function lightTheme() {
+      var theme = document.getElementById('pagestyle');
+      theme.href = "styleLight.css";
+    }
+
+  </script>
+
+<?php
+  $cookie_name = "mode";
+  $cookie_value = "dark"; //dark mode by default
 ?>
-
-
 <!DOCTYPE html>
 <html>
 <head>
 
-
-    <!--Reference to the library chart.js used to create graphs -->
-    <script src= "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
-    <link rel="stylesheet" type= "text/css" href="style.css">
-
 </head>
 <body>
     <header>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <nav>
             <div class="main-wrapper">
+              <!-- update cookies -->
+              <?php if(!isset($_COOKIE[$cookie_name])) { ?>
+                      <p></p>
+              <?php }elseif ($_COOKIE[$cookie_name] == "light"){?>
+    							<script>lightTheme();</script>
+    						<?php } else{?> <!-- Default mode is dark-->
+    				    <script>darkTheme();</script>
+    				  <?php }?>
 
 
-
-<div class= "nav-login"> <!--Reference to the CSS for navigation bar. -->
+<div class= "nav-login"> <!--feference to the CSS for navigation bar. -->
 <?php
-    //Checks if user is logged in and determines the layout and contents of the webpage
-    //If user not logged in; Home, Create and Sign Up pages are displayed aswell as login option in centre of navigation bar.
-    //If user logged in; Home, Create and Saved pages are displayed.
-    if (isset($_SESSION['u_id'])){
-        echo '<form action = "logout.inc.php" method = "POST">
-            <button type="submit" name="submit">Logout</button>
-            </form>
-            <ul>
-              <li><a href="index.php">Home</a></li>
-            </ul>';
-    }else{
-        echo '<form action = "login.inc.php" method = "POST">
-        <input type = "text" name= "uid" placeholder = "Username/e-mail">
-        <input type = "password" name= "pwd" placeholder = "Password">
-        <button type = "submit" name="submit">Login</button>
-        </form>
-        <ul>
-          <li><a href="index.php">Home</a></li>
-          <li><a href="signup.php">Register</a></li>
-        </ul>';
-    }
+  // layout depends on whether user is logged in
+  if (isset($_SESSION['u_id'])){
+      echo '<form action = "logout.inc.php" method = "POST">
+      <button type="submit" name="submit">Logout</button>
+      </form>
+      <ul>
+        <li><a href="index.php">Home</a></li>
+        <li><a href="account.php">Account</a></li>
+      </ul>';
+  }else{
+    // log in form
+      echo '<form action = "login.inc.php" method = "POST">
+      <input type = "text" name= "uid" placeholder = "Username/e-mail">
+      <input type = "password" name= "pwd" placeholder = "Password">
+      <button type = "submit" name="submit">Login</button>
+      </form>
+      <ul>
+        <li><a href="index.php">Home</a></li>
+        <li><a href="signup.php">Register</a></li>
+      </ul>';
+  }
 ?>
 
-        </nav>
-
-    </header>
+  </nav>
+</header>

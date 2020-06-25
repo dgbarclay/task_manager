@@ -1,0 +1,21 @@
+create table users
+(
+    user_id    int auto_increment
+        primary key,
+    user_first varchar(20)  not null,
+    user_last  varchar(40)  not null,
+    user_email varchar(80)  not null,
+    user_uid   varchar(20)  not null,
+    user_pwd   varchar(256) not null,
+    salt       varchar(256) not null
+);
+create table userData
+(
+    user_dataid int auto_increment
+        primary key,
+    user_id     int          not null,
+    name        varchar(256) not null,
+    description varchar(500) not null,
+    date_due    varchar(256) not null,
+    completed   varchar(256) not null
+);

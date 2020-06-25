@@ -1,6 +1,6 @@
 <?php
 
-if (isset($_POST['submit'])) { //Only allows users to enter if they press button
+if (isset($_POST['submit'])) {
 
 	include_once 'dbh.inc.php';
 
@@ -10,66 +10,75 @@ if (isset($_POST['submit'])) { //Only allows users to enter if they press button
 	$uid = $_POST['uid'];
 	$pwd = $_POST['pwd'];
 
-	//Exception handling
-	//Checks for any empty fields
+	// exception handling
+	// check for any empty fields
 	if(empty($first) || empty($last) || empty($email)|| empty($uid)|| empty($pwd)){
-		header("Location: ../signup.php?signup=empty");
+		header("Location: ../db581/signup.php?signup=empty");
 		exit();
-	}else {
-		//Check if input characters are valid.
-		if (!preg_match("/^[a-zA-Z]*$/", $first)|| !preg_match("/^[a-zA-Z]*$/", $last ) || !preg_match("/^[a-zA-Z]*$/", $uid )){
-			header("Location: ../signup.php?signup=invalid");
+	}else{
+		// check if username is the same as password
+		if (strtoLower($pwd) == strtoLower($uid) || strtoLower($pwd) == strtoLower($email)){
+			header("Location: ../db581/signup.php?password=username");
 			exit();
-
-		}else {
-			//Check if email is valid, contains @.
-			if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
-				header("Location: ../signup.php?signup=invalidEmail");
+		}else{
+		// check if input characters are valid
+			if (!preg_match("/^[a-zA-Z]*$/", $first)|| !preg_match("/^[a-zA-Z]*$/", $last ) || !preg_match("/^[a-zA-Z]*$/", $uid )){
+				header("Location: ../db581/signup.php?signup=invalid");
 				exit();
-			}
+
+			}else {
+				// check if email is valid
+				if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+					header("Location: ../db581/signup.php?signup=invalidEmail");
+					exit();
+				}
 				else{
 					$sql = "SELECT * FROM users WHERE user_uid= '$uid'";
-					$result = mysqli_query($conn,$sql);
-					$resultCheck = mysqli_num_rows($result);
-					//Checks if username already exists in database.
-					if ($resultCheck > 0){
-						header("Location: ../signup.php?signup=usernameTaken");
+					$result = $conn->query($sql);
+					// checks if username already exists in database
+					if ($result->num_rows > 0){
+						header("Location: ../db581/signup.php?signup=usernameTaken");
 						exit();
 					}
 					else{
 							$sql = "SELECT * FROM users WHERE user_email= '$email'";
-							$result = mysqli_query($conn,$sql);
-							$resultCheck = mysqli_num_rows($result);
-							//Checks if email already exists in database.
-							if ($resultCheck > 0){
-								header("Location: ../signup.php?signup=emailtaken");
+							$result = $conn->query($sql);
+							// checks if email already exists in database
+							if ($result->num_rows > 0){
+								header("Location: ../db581/signup.php?signup=emailtaken");
 								exit();
 							}
 						else{
-						//Hashing of user password using password_hash fucntion and PASSWORD_DEFAULT algorithm.
-						$hashedPwd = password_hash($pwd, PASSWORD_DEFAULT);
-						//Insert the user into database.
-						$sql = "INSERT INTO users (user_first, user_last, user_email, user_uid, user_pwd) VALUES ('$first', '$last', '$email', '$uid', '$hashedPwd');";
-						$result = mysqli_query($conn, $sql);
-						print $sql;
-						//IF successful, user then redirected to login page to log into website.
-						if($result == TRUE){
-							header("Location: ../login.php");
-						}else{
-							print "error";
-						}
-						exit();
+							// salt and pepper to hash password
+							$salt = bin2hex(openssl_random_pseudo_bytes(5));
+							$hashedPwd = md5($salt.$pwd.$pepper);
+							// prevent sql injection
+							$first = mysqli_real_escape_string($conn, $first);
+							$last = mysqli_real_escape_string($conn, $last);
+							$email = mysqli_real_escape_string($conn, $email);
+							$uid = mysqli_real_escape_string($conn, $uid);
+
+							$stmt = $conn->prepare("INSERT INTO users (user_first, user_last, user_email, user_uid, user_pwd, salt)
+							VALUES (?, ?, ?, ?, ?, ?);");
+
+							$stmt->bind_param("ssssss", $first, $last, $email, $uid, $hashedPwd, $salt);
+							$stmt->bind_result($v1, $v2, $v3, $v4, $v5, $v6, $v7);
+							$result = $stmt->execute();
+
+							if($result == TRUE){
+								header("Location: ../db581/index.php?register=successful");
+							}else{
+								print "error";
+							}
+							exit();
 						}
 					}
-
 				}
-
-		}
-
+			}
 		}
 	}
+}
 else{
-
-	header("Location: ../signup.php");
+	header("Location: ../db581/signup.php");
 	exit();
 }
